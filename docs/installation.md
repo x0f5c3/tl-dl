@@ -1,7 +1,7 @@
-# Quick Start - Install cli-template
+# Quick Start - Install toolbox-download
 
 > [!TIP]
-> cli-template is installable via [instl.sh](https://instl.sh).\
+> toolbox-download is installable via [instl.sh](https://instl.sh).\
 > You just have to run the following command and you're ready to go!
 
 <!-- tabs:start -->
@@ -35,10 +35,10 @@ curl -sSL instl.sh/x0f5c3/tl-dl/macos | bash
 ### Compile from source with Golang
 
 ?> **NOTICE**
-To compile cli-template from source, you have to have [Go](https://golang.org/) installed.
+To compile toolbox-download from source, you have to have [Go](https://golang.org/) installed.
 
-Compiling cli-template from source has the benefit that the build command is the same on every platform.\
-It is not recommended to install Go only for the installation of cli-template.
+Compiling toolbox-download from source has the benefit that the build command is the same on every platform.\
+It is not recommended to install Go only for the installation of toolbox-download.
 
 ```command
 go install github.com/x0f5c3/tl-dl@latest
