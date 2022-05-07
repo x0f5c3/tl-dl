@@ -17,7 +17,7 @@ func main() {
 	flag.BoolVar(&pterm.PrintDebugMessages, "debug", false, "show debug output")
 	flag.Parse()
 
-	pterm.DefaultHeader.Println("PTerm CLI Template Setup")
+	pterm.DefaultHeader.Println("Toolbox-download Setup")
 
 	originURL := detectOriginURL()
 

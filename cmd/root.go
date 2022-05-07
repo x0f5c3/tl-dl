@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"github.com/x0f5c3/tl-dl/pkg/products"
 	"os"
 	"os/signal"
 
@@ -10,21 +12,33 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "cli-template",
-	Short: "This cli template shows the date and time in the terminal",
-	Long: `This is a template CLI application, which can be used as a boilerplate for awesome CLI tools written in Go.
-This template prints the date or time to the terminal.`,
-	Example: `cli-template date
-cli-template date --format 20060102
-cli-template time
-cli-template time --live`,
+	Use:     "toolbox-download",
+	Short:   "A tool and a library to download the jetbrains-toolbox",
 	Version: "v0.0.1", // <---VERSION---> Updating this version, will also create a new GitHub release.
 	// Uncomment the following lines if your bare application has an action associated with it:
-	// RunE: func(cmd *cobra.Command, args []string) error {
-	// 	// Your code here
-	//
-	// 	return nil
-	// },
+	RunE: runFunc,
+	Args: cobra.ExactArgs(1),
+}
+
+func runFunc(cmd *cobra.Command, args []string) error {
+	prod, err := products.GetToolbox()
+	if err != nil {
+		pterm.Fatal.Sprintf("Failed to retrive toolbox data: %s\n", err)
+		return err
+	}
+	rel, err := prod.LatestRelease()
+	if err != nil {
+		return err
+	}
+	b, err := rel.Download()
+	if err != nil {
+		return err
+	}
+	err = b.Data.Save(fmt.Sprintf("%s/%s", args[0], b.Data.FileName))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -36,17 +50,24 @@ func Execute() {
 	go func() {
 		<-c
 		pterm.Warning.Println("user interrupt")
-		pcli.CheckForUpdates()
+		if err := pcli.CheckForUpdates(); err != nil {
+			pterm.Fatal.Sprintf("Failed to check for updates: %s\n", err)
+			os.Exit(1)
+		}
 		os.Exit(0)
 	}()
 
 	// Execute cobra
 	if err := rootCmd.Execute(); err != nil {
-		pcli.CheckForUpdates()
+		err := pcli.CheckForUpdates()
+		pterm.Fatal.Sprintf("Failed to check for updates: %s\n", err)
 		os.Exit(1)
 	}
 
-	pcli.CheckForUpdates()
+	if err := pcli.CheckForUpdates(); err != nil {
+		pterm.Fatal.Sprintf("Failed to check for updates: %s\n", err)
+		os.Exit(1)
+	}
 }
 
 func init() {
@@ -57,7 +78,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&pcli.DisableUpdateChecking, "disable-update-checks", "", false, "disables update checks")
 
 	// Use https://github.com/pterm/pcli to style the output of cobra.
-	pcli.SetRepo("pterm/cli-template")
+	pcli.SetRepo("x0f5c3/tl-dl")
 	pcli.SetRootCmd(rootCmd)
 	pcli.Setup()
 
