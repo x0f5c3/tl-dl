@@ -14,7 +14,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "toolbox-download",
 	Short:   "A tool and a library to download the jetbrains-toolbox",
-	Version: "v0.0.1", // <---VERSION---> Updating this version, will also create a new GitHub release.
+	Version: "v0.0.3", // <---VERSION---> Updating this version, will also create a new GitHub release.
 	// Uncomment the following lines if your bare application has an action associated with it:
 	RunE: runFunc,
 	Args: cobra.ExactArgs(1),
