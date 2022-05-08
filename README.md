@@ -1,4 +1,4 @@
-<h1 align="center">tl-dl</h1>
+<h1 align="center">toolbox-download</h1>
 <p align="center">A tool and a library to download the jetbrains-toolbox</p>
 
 <p align="center">
@@ -49,8 +49,7 @@
 
 ----
 
-This is a template CLI application, which can be used as a boilerplate for awesome CLI tools written in Go.
-This template prints the date or time to the terminal.
+
 
 ## Installation
 

@@ -3,13 +3,13 @@
 ## Usage
 > A tool and a library to download the jetbrains-toolbox
 
-toolbox-download
+toolbox-download [DOWNLOAD_DIR]
 
 ## Flags
 |Flag|Usage|
 |----|-----|
-|`--debug`|enable debug messages|
-|`--disable-update-checks`|disables update checks|
+|`-d, --debug`|enable debug messages|
+|`-n, --disable-update-checks`|disables update checks|
 |`--raw`|print unstyled raw output (set it if output is written to a file)|
 
 ## Commands
@@ -186,4 +186,4 @@ Simply type toolbox-download help [path to command] for full details.
 
 
 ---
-> **Documentation automatically generated with [PTerm](https://github.com/pterm/cli-template) on 07 May 2022**
+> **Documentation automatically generated with [PTerm](https://github.com/pterm/cli-template) on 08 May 2022**
