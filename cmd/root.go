@@ -5,6 +5,7 @@ import (
 	"github.com/x0f5c3/tl-dl/pkg/products"
 	"os"
 	"os/signal"
+	"runtime"
 
 	"github.com/pterm/pcli"
 	"github.com/pterm/pterm"
@@ -12,33 +13,39 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:     "toolbox-download",
+	Use:     "toolbox-download [DOWNLOAD_DIR]",
 	Short:   "A tool and a library to download the jetbrains-toolbox",
-	Version: "v0.0.3", // <---VERSION---> Updating this version, will also create a new GitHub release.
+	Version: "v0.0.4", // <---VERSION---> Updating this version, will also create a new GitHub release.
 	// Uncomment the following lines if your bare application has an action associated with it:
 	RunE: runFunc,
 	Args: cobra.ExactArgs(1),
 }
 
-func runFunc(cmd *cobra.Command, args []string) error {
-	prod, err := products.GetToolbox()
-	if err != nil {
-		pterm.Fatal.Sprintf("Failed to retrive toolbox data: %s\n", err)
-		return err
-	}
-	rel, err := prod.LatestRelease()
+func runFunc(_ *cobra.Command, args []string) error {
+	b, err := products.DownloadNative()
 	if err != nil {
 		return err
 	}
-	b, err := rel.Download()
-	if err != nil {
-		return err
-	}
-	err = b.Data.Save(fmt.Sprintf("%s/%s", args[0], b.Data.FileName))
-	if err != nil {
-		return err
+	if runtime.GOOS != "linux" {
+		err = b.Data.Save(fmt.Sprintf("%s/%s", args[0], b.Data.FileName))
+		if err != nil {
+			return err
+		}
+	} else {
+		err = b.Unpack(args[0])
+		if err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+func handleUpdate() {
+	err := pcli.CheckForUpdates()
+	if err != nil {
+		pterm.Error.Printf("Update check failed: %s\n", err)
+		os.Exit(1)
+	}
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -50,35 +57,28 @@ func Execute() {
 	go func() {
 		<-c
 		pterm.Warning.Println("user interrupt")
-		if err := pcli.CheckForUpdates(); err != nil {
-			pterm.Fatal.Sprintf("Failed to check for updates: %s\n", err)
-			os.Exit(1)
-		}
+		handleUpdate()
 		os.Exit(0)
 	}()
 
 	// Execute cobra
 	if err := rootCmd.Execute(); err != nil {
-		err := pcli.CheckForUpdates()
-		pterm.Fatal.Sprintf("Failed to check for updates: %s\n", err)
+		handleUpdate()
 		os.Exit(1)
 	}
 
-	if err := pcli.CheckForUpdates(); err != nil {
-		pterm.Fatal.Sprintf("Failed to check for updates: %s\n", err)
-		os.Exit(1)
-	}
+	handleUpdate()
 }
 
 func init() {
 	// Adds global flags for PTerm settings.
 	// Fill the empty strings with the shorthand variant (if you like to have one).
-	rootCmd.PersistentFlags().BoolVarP(&pterm.PrintDebugMessages, "debug", "", false, "enable debug messages")
+	rootCmd.PersistentFlags().BoolVarP(&pterm.PrintDebugMessages, "debug", "d", false, "enable debug messages")
 	rootCmd.PersistentFlags().BoolVarP(&pterm.RawOutput, "raw", "", false, "print unstyled raw output (set it if output is written to a file)")
-	rootCmd.PersistentFlags().BoolVarP(&pcli.DisableUpdateChecking, "disable-update-checks", "", false, "disables update checks")
+	rootCmd.PersistentFlags().BoolVarP(&pcli.DisableUpdateChecking, "disable-update-checks", "n", false, "disables update checks")
 
 	// Use https://github.com/pterm/pcli to style the output of cobra.
-	pcli.SetRepo("x0f5c3/tl-dl")
+	_ = pcli.SetRepo("x0f5c3/tl-dl")
 	pcli.SetRootCmd(rootCmd)
 	pcli.Setup()
 

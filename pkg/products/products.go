@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/Masterminds/semver"
-	"github.com/i582/cfmt/cmd/cfmt"
+	"github.com/pterm/pterm"
 	"github.com/x0f5c3/manic-go/pkg/downloader"
 	"io/ioutil"
 	"net/http"
@@ -79,9 +79,9 @@ type OS struct {
 }
 
 func (o OS) String() string {
-	res := cfmt.Sprintf("{{ChecksumLink: %s}}::green\n", o.ChecksumLink)
-	res += cfmt.Sprintf("{{Link: %s}}::green\n", o.Link)
-	res += cfmt.Sprintf("{{Size: %d}}::green", o.Size)
+	res := pterm.FgGreen.Sprintf("ChecksumLink: %s\n", o.ChecksumLink)
+	res += pterm.FgGreen.Sprintf("Link: %s\n", o.Link)
+	res += pterm.FgGreen.Sprintf("Size: %d", o.Size)
 	return res
 }
 
@@ -140,15 +140,20 @@ func (r Release) GetOS() (OS, error) {
 
 func (r Release) Download() (*DownloadedPackage, error) {
 	o, err := r.GetOS()
+	if err != nil {
+		return nil, err
+	}
 	shaResp, err := http.Get(o.ChecksumLink)
 	if err != nil {
 		return nil, err
 	}
+	pterm.Debug.Printf("Got SHA256 resp: %dB\n", shaResp.ContentLength)
 	shaB, err := ioutil.ReadAll(shaResp.Body)
 	if err != nil {
 		return nil, err
 	}
 	shaString := strings.TrimSpace(strings.Split(string(shaB), " ")[0])
+	pterm.Debug.Printf("Got SHA256 checksum: %s\n", shaString)
 	size := int(o.Size)
 	dl, err := downloader.New(o.Link, shaString, http.DefaultClient, &size)
 	if err != nil {
@@ -158,6 +163,7 @@ func (r Release) Download() (*DownloadedPackage, error) {
 	if err != nil {
 		return nil, err
 	}
+	pterm.Success.Printf("Downloaded %d bytes\n", dl.Length)
 	err = dl.GetFilename()
 	if err != nil {
 		return nil, err
@@ -181,19 +187,21 @@ func DownloadNative() (*DownloadedPackage, error) {
 	if err != nil {
 		return nil, err
 	}
+	pterm.Debug.Printf("Got product %s\n", prod.Name)
 	latest, err := prod.LatestRelease()
 	if err != nil {
 		return nil, err
 	}
+	pterm.Debug.Printf("Got release %s\n", latest.Build)
 	return latest.Download()
 }
 
 func (d *DownloadedPackage) String() string {
 	res := ""
-	res += cfmt.Sprintf("{{Build: %s}}::green\n", d.Build)
-	res += cfmt.Sprintf("{{Date: %s}}::green\n", d.Date)
-	res += cfmt.Sprintf("{{NotesLink: %s}}::green\n", d.NotesLink)
-	res += cfmt.Sprintf("{{Whatsnew: %s}}::green\n", d.Whatsnew)
-	res += cfmt.Sprintf("{{OS: %s}}::green", d.OS.String())
+	res += pterm.FgGreen.Sprintf("Build: %s\n", d.Build)
+	res += pterm.FgGreen.Sprintf("Date: %s\n", d.Date)
+	res += pterm.FgGreen.Sprintf("NotesLink: %s\n", d.NotesLink)
+	res += pterm.FgGreen.Sprintf("Whatsnew: %s\n", d.Whatsnew)
+	res += pterm.FgGreen.Sprintf("OS: %s", d.OS.String())
 	return res
 }
