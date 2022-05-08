@@ -1,21 +1,20 @@
+//go:build !linux
+
 package cmd
 
 import (
-	"fmt"
-	"github.com/x0f5c3/tl-dl/pkg/products"
-	"os"
-	"os/signal"
-	"runtime"
-
 	"github.com/pterm/pcli"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/x0f5c3/tl-dl/pkg/products"
+	"os"
+	"os/signal"
 )
 
 var rootCmd = &cobra.Command{
 	Use:     "toolbox-download [DOWNLOAD_DIR]",
 	Short:   "A tool and a library to download the jetbrains-toolbox",
-	Version: "v0.0.4", // <---VERSION---> Updating this version, will also create a new GitHub release.
+	Version: "v0.0.5", // <---VERSION---> Updating this version, will also create a new GitHub release.
 	// Uncomment the following lines if your bare application has an action associated with it:
 	RunE: runFunc,
 	Args: cobra.ExactArgs(1),
@@ -26,18 +25,7 @@ func runFunc(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if runtime.GOOS != "linux" {
-		err = b.Data.Save(fmt.Sprintf("%s/%s", args[0], b.Data.FileName))
-		if err != nil {
-			return err
-		}
-	} else {
-		err = b.Unpack(args[0])
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return b.Save(args[0])
 }
 
 func handleUpdate() {

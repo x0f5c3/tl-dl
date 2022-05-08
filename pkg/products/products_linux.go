@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func (d *DownloadedPackage) Unpack(dir string) error {
+func (d *DownloadedPackage) Save(dir string) error {
 	g, err := gzip.NewReader(bytes.NewBuffer(*d.Data.Data))
 	if err != nil {
 		return err
