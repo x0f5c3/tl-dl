@@ -8,7 +8,7 @@ gomod:
 builds:
   - env:
       - CGO_ENABLED=0
-    main: github.com/x0f5c3/tl-dl/cmd/tl-dl
+    main: ./cmd/tl-dl
     goos:
       - linux
       - darwin
