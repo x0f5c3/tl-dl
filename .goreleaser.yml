@@ -6,12 +6,13 @@ before:
 gomod:
   proxy: true
 builds:
-  - env:
+  - binary: tl-dl
+    id: lin-win
+    env:
       - CGO_ENABLED=0
     main: ./cmd/tl-dl
     goos:
       - linux
-      - darwin
       - windows
     goarch:
       - 386
@@ -23,6 +24,43 @@ builds:
       - -trimpath
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=pterm
+  - binary: tl-dl
+    id: mac
+    env:
+      - CGO_ENABLED=0
+    dir: ./cmd/tl-dl
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=pterm
+
+universal_binaries:
+  -
+    # ID of resulting universal binary.
+    #
+    # Defaults to the project name.
+    id: mac-uni
+
+    ids:
+      - mac
+    # Universal binary name template.
+    #
+    # You will want to change this if you have multiple builds!
+    #
+    # Defaults to '{{ .ProjectName }}'
+    name_template: '{{.ProjectName}}_Universal'
+
+    # Whether to remove the previous single-arch binaries from the artifact list.
+    # If left as false, your end release might have both several macOS archives: amd64, arm64 and all.
+    #
+    # Defaults to false.
+    replace: true
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
 changelog:
@@ -37,11 +75,37 @@ changelog:
       - Merge branch
       - go mod tidy
 archives:
-  - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+  - id: lin-win
+    name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    builds:
+      - lin-win
     replacements:
-      darwin: Darwin
       linux: Linux
       windows: Windows
     format_overrides:
       - goos: windows
         format: zip
+  - id: macos-zip
+    format: zip
+    name_template: "{{ .ProjectName }}_{{ .Os }}"
+    builds:
+      - mac-uni
+    replacements:
+      darwin: macos
+      amd64: x86_64
+
+#signs:
+#  - signature: "${artifact}_macos.dmg"
+#    ids:
+#      - macos-zip
+#    cmd: gon
+#    args:
+#      - gon.hcl
+#    artifacts: all
+release:
+  ids:
+    - none
+  extra_files:
+#    - glob: ./dist/tl-dl_macos.dmg
+    - glob: ./dist/tl-dl_macos.zip
+
