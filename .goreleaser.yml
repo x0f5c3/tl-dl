@@ -8,9 +8,9 @@ gomod:
 builds:
   - binary: tl-dl
     id: lin-win
+    main: ./cmd/tl-dl
     env:
       - CGO_ENABLED=0
-    main: ./cmd/tl-dl
     goos:
       - linux
       - windows
@@ -26,9 +26,9 @@ builds:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=pterm
   - binary: tl-dl
     id: mac
+    main: ./cmd/tl-dl
     env:
       - CGO_ENABLED=0
-    dir: ./cmd/tl-dl
     goos:
       - darwin
     goarch:
@@ -39,7 +39,6 @@ builds:
       - -trimpath
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=pterm
-
 universal_binaries:
   -
     # ID of resulting universal binary.
@@ -54,15 +53,16 @@ universal_binaries:
     # You will want to change this if you have multiple builds!
     #
     # Defaults to '{{ .ProjectName }}'
-    name_template: '{{.ProjectName}}_Universal'
+    name_template: '{{.ProjectName}}-Universal'
 
     # Whether to remove the previous single-arch binaries from the artifact list.
     # If left as false, your end release might have both several macOS archives: amd64, arm64 and all.
     #
     # Defaults to false.
     replace: true
+
 checksum:
-  name_template: '{{ .ProjectName }}_checksums.txt'
+  name_template: '{{ .ProjectName }}.sha256'
 changelog:
   sort: asc
   filters:
@@ -76,7 +76,7 @@ changelog:
       - go mod tidy
 archives:
   - id: lin-win
-    name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    name_template: '{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     builds:
       - lin-win
     replacements:
@@ -85,27 +85,25 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    files:
+      - README.md
+      - LICENSE
   - id: macos-zip
     format: zip
-    name_template: "{{ .ProjectName }}_{{ .Os }}"
+    name_template: "{{ .ProjectName }}-{{ .Os }}-Universal"
     builds:
       - mac-uni
     replacements:
-      darwin: macos
+      darwin: MacOS
       amd64: x86_64
+    files:
+      - README.md
+      - LICENSE
 
-#signs:
-#  - signature: "${artifact}_macos.dmg"
-#    ids:
-#      - macos-zip
-#    cmd: gon
-#    args:
-#      - gon.hcl
-#    artifacts: all
 release:
   ids:
     - none
   extra_files:
-#    - glob: ./dist/tl-dl_macos.dmg
-    - glob: ./dist/tl-dl_macos.zip
-
+    - glob: ./dist/tl-dl-MacOS-Universal.zip
+    - glob: ./dist/tl-dl-Linux*.tar.gz
+    - glob: ./dist/tl-dl-Windows*.zip
